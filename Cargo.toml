@@ -6,6 +6,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-static-math = "0.2.1"
-itertools = "0.10.1"
-fast_inv_sqrt = "~1.0.1"
+static-math = {path = "/home/elsuizo/Repos/static-math"}
+
+# [profile.release]
+# debug = true

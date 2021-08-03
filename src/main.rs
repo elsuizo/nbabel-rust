@@ -1,5 +1,33 @@
-#![feature(array_zip)]
-
+//----------------------------------------------------------------------------
+// @file main.rs
+//
+// @date 2021-07-31
+// @author Martin Noblia
+// @email mnoblia@disroot.org
+//
+// @brief
+//
+// @detail
+//
+// Licence MIT:
+// Copyright <2021> <Martin Noblia>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.  THE SOFTWARE IS PROVIDED
+// "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+// LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+// PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//----------------------------------------------------------------------------
 use static_math::V3;
 use std::fs;
 use std::str::FromStr;
@@ -58,32 +86,23 @@ impl<const N: usize> Bodies<N> {
     }
 
     pub fn update_acceleration(&mut self) {
-        // for mut p in self.particles {
-        //     p.acceleration = V3::zeros();
-        // }
-        // for i in 0..N {
-        //     for j in 0..N {
-        //         if (i != j) {
-        //             let rij = self.particles[i].position - self.particles[j].position;
-        //             let r_dot_r = rij * rij;
-        //             let apre = 1.0 / f64::sqrt(r_dot_r * r_dot_r * r_dot_r);
-        //             self.particles[i].acceleration -= self.particles[j].mass * apre * rij;
-        //         }
-        //     }
-        // }
-        for (mut p1, p2) in self.particles.zip(self.particles) {
-            if p1 != p2 {
-                let rij = p1.position - p2.position;
+        for i in 0..N {
+            self.particles[i].acceleration = V3::zeros();
+        }
+        for i in 0..N {
+            for j in i + 1..N {
+                let rij = self.particles[i].position - self.particles[j].position;
                 let r_dot_r = rij * rij;
-                let apre = 1.0 / f64::sqrt(r_dot_r * r_dot_r * r_dot_r);
-                p1.acceleration -= p2.mass * apre * rij;
+                let apre = (r_dot_r * r_dot_r * r_dot_r).recip().sqrt();
+                self.particles[i].acceleration -= self.particles[j].mass * apre * rij;
+                self.particles[j].acceleration += self.particles[i].mass * apre * rij;
             }
         }
     }
 
     pub fn update_positions(&mut self, dt: f64) {
         self.particles.iter_mut().for_each(|p| {
-            // p.acceleration_0 = p.acceleration;
+            p.acceleration_0 = p.acceleration;
             p.position += dt * p.velocity + 0.5 * dt * dt * p.acceleration_0
         });
     }
@@ -100,8 +119,7 @@ impl<const N: usize> Bodies<N> {
         let mut kinetic_energy = 0.0;
         let mut potential_energy = 0.0;
         for i in 0..N {
-            let temp_vel = self.particles[i].velocity * self.particles[i].velocity;
-            kinetic_energy += 0.5 * self.particles[i].mass * temp_vel;
+            kinetic_energy += 0.5 * self.particles[i].mass * self.particles[i].velocity * self.particles[i].velocity;
             for j in i + 1..N {
                 // distance between the two stars
                 let rij = self.particles[i].position - self.particles[j].position;
@@ -133,13 +151,13 @@ pub fn parse_row(line: &str) -> Particle {
 fn main() {
     let mut bodies: Bodies<128> = Bodies::new("input128");
     // start time, end time and simulation step
-    let mut t = 0.0;
-    let t_end = 10.0;
+    // let mut t = 0.0;
+    // let t_end = 10.0;
     let dt = 0.001;
-    let mut k = 0;
+    // let mut k = 0;
 
     bodies.update_acceleration();
-    let (mut potential_energy, mut kinetic_energy) = bodies.compute_energies();
+    let (potential_energy, kinetic_energy) = bodies.compute_energies();
     let total_energy = potential_energy + kinetic_energy;
     for _ in STEPS {
         // update positions based on velocities and accelerations
@@ -159,4 +177,5 @@ fn main() {
         "Final dE/E = {}",
         ((ekin + epot) - total_energy) / total_energy
     );
+    // bodies.print_mass();
 }

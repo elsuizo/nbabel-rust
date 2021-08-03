@@ -44,7 +44,7 @@ const fn generate_steps() -> [i64; 10000] {
 
 const STEPS: [i64; 10000] = generate_steps();
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug)]
 pub struct Particle {
     position: V3<f64>,
     velocity: V3<f64>,
@@ -60,7 +60,7 @@ impl Default for Particle {
             velocity: V3::zeros(),
             acceleration: V3::zeros(),
             acceleration_0: V3::zeros(),
-            mass: 0.0,
+            mass: f64::default(),
         }
     }
 }
@@ -71,12 +71,12 @@ struct Bodies<const N: usize> {
 }
 
 impl<const N: usize> Bodies<N> {
+
     pub fn new(file_path: &str) -> Self {
         let mut particles = [Particle::default(); N];
         for (index, particle) in fs::read_to_string(file_path)
             .expect(&format!("File `{}` not found!", file_path))
             .lines()
-            .filter(|x| !x.is_empty())
             .map(|x| parse_row(x))
             .enumerate()
         {
@@ -154,7 +154,6 @@ fn main() {
     // let mut t = 0.0;
     // let t_end = 10.0;
     let dt = 0.001;
-    // let mut k = 0;
 
     bodies.update_acceleration();
     let (potential_energy, kinetic_energy) = bodies.compute_energies();
@@ -177,5 +176,4 @@ fn main() {
         "Final dE/E = {}",
         ((ekin + epot) - total_energy) / total_energy
     );
-    // bodies.print_mass();
 }

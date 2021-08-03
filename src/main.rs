@@ -42,6 +42,8 @@ const fn generate_steps() -> [i64; 10000] {
     result
 }
 
+const V3_ZEROS: V3<f64> = V3::new_from(0.0, 0.0, 0.0);
+
 const STEPS: [i64; 10000] = generate_steps();
 
 #[derive(Clone, Copy, Debug)]
@@ -56,10 +58,10 @@ pub struct Particle {
 impl Default for Particle {
     fn default() -> Self {
         Self {
-            position: V3::zeros(),
-            velocity: V3::zeros(),
-            acceleration: V3::zeros(),
-            acceleration_0: V3::zeros(),
+            position: V3_ZEROS,
+            velocity: V3_ZEROS,
+            acceleration: V3_ZEROS,
+            acceleration_0: V3_ZEROS,
             mass: f64::default(),
         }
     }
@@ -87,7 +89,7 @@ impl<const N: usize> Bodies<N> {
 
     pub fn update_acceleration(&mut self) {
         for i in 0..N {
-            self.particles[i].acceleration = V3::zeros();
+            self.particles[i].acceleration = V3_ZEROS;
         }
         for i in 0..N {
             for j in i + 1..N {
@@ -142,8 +144,8 @@ pub fn parse_row(line: &str) -> Particle {
     Particle {
         position: V3::new_from(row_vec[1], row_vec[2], row_vec[3]),
         velocity: V3::new_from(row_vec[4], row_vec[5], row_vec[6]),
-        acceleration: V3::zeros(),
-        acceleration_0: V3::zeros(),
+        acceleration: V3_ZEROS,
+        acceleration_0: V3_ZEROS,
         mass: row_vec[0],
     }
 }
